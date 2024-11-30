@@ -1,8 +1,13 @@
 #include<iostream>
+#include<conio.h>
 #include<string>
 #include<ctime>
+#include "HashMap.h"
+#include "Graph.h"
+
 
 using namespace std;
+
 
 // Utility to get current timestamp
 string getCurrentTime() {
@@ -47,7 +52,7 @@ public:
     }
 
     // Display all messages in the stack (from the latest to the oldest)
-    void display () {
+    void display() {
         Node* temp = top;
         while (temp) {
             cout << temp->data << "\n";
@@ -90,7 +95,7 @@ public:
     void display() {
         Node* temp = front;
         while (temp) {
-            cout << temp->data << "\n";
+            cout << "Friend Request from : " << temp->data << "\n";
             temp = temp->next;
         }
     }
@@ -166,7 +171,7 @@ class Conversation {
 public:
     Conversation* next;
 public:
-    Conversation(string friendName) : friendUsername(friendName),next(NULL) {}
+    Conversation(string friendName) : friendUsername(friendName), next(NULL) {}
 
     string getFriendUsername() const {
         return friendUsername;
@@ -176,12 +181,12 @@ public:
         messages.push(message);
     }
 
-    void displayMessages()  {
+    void displayMessages() {
         cout << "Messages with " << friendUsername << ":\n";
         messages.display();
     }
 
-    bool hasMessages()  {
+    bool hasMessages() {
         return !messages.isEmpty();
     }
 };
@@ -192,7 +197,7 @@ class User
     string password;
     string city;
     string lastLogin;
-    string email;
+    string security;
     Queue friendRequests;
     Stack posts;
     Queue notifications;
@@ -200,20 +205,20 @@ class User
     // A linked list of Conversation objects (each conversation is between this user and their friend)
     Conversation* conversations;
 public:
-    User(string uname, string pwd, string c,string em ,BST* bst) : username(uname), password(pwd), city(c), platformBST(bst), email(em),conversations(nullptr) {}
+    User(string uname, string pwd, string c, string sec, BST* bst) : username(uname), password(pwd), city(c), platformBST(bst), security(sec), conversations(nullptr) {}
 
-    bool validatePassword(const string pass) { return pass ==password ; }
+    bool validatePassword(const string pass) { return pass == password; }
     string getUsername() { return username; }
-    string getEmail() { return email; }
-    void resetPassword( const string& newPassword);
+    string getSecurity() { return security; }
+    void resetPassword(const string& newPassword);
     void login() { lastLogin = getCurrentTime(); }
     void addPost(const string& postContent) { posts.push(postContent); }
     void showProfile();
     void sendMessage(const string& toUser, const string& message);
     void viewMessages(const string& friendUsername);
     void sendFriendRequest(User* toUser);
-    void viewFriendRequests();
-    bool checkemailpass(string email,string emailPassword);
+    void viewFriendRequests(Graph* G);
+    bool checkemailpass(string email, string emailPassword);
     void createPost(const string& content);
     void viewPosts();
     void viewNotifications();
@@ -225,36 +230,62 @@ public:
 };
 // Class representing the platform's graph (MiniInstagram)
 class MiniInstagram {
-   
+private:
+    HashMap userCredentials;
 public:
     BST userBST;
+    Graph userRelations;
     MiniInstagram() {}
-
-    void signup(const string& username, const string& password, const string& city, const string& email, User* newUser);
-    User* login( string& username,  string password);
+    void signup(string& username, const string& password, const string& city, const string& email, User* newUser);
+    User* login(string& username, string password);
     void showUsers();
+    Graph* getRelations();
 };
 // Implementing MiniInstagram methods
-void MiniInstagram::signup(const string& username, const string& password, const string& city, const string& email, User* newUser) {
-    newUser = new User(username, password, city,email, &userBST);
+void MiniInstagram::signup(string& username, const string& password, const string& city, const string& email, User* newUser) {
+    while (userBST.search(username) != nullptr)
+    {
+        cout << "[ USER NAME ALREADY TAKEN ... ENTER NEW USER NAME ]" << endl;
+        cout << "Enter username: ";
+        cin >> username;
+    }
+    newUser = new User(username, password, city, email, &userBST);
     userBST.insert(username, newUser);  // Store the User object in the BST
+    userCredentials.insert(username, password);
+    userRelations.addVertex(username);
     cout << "Signup successful for " << username << "\n";
 }
 
 User* MiniInstagram::login(string& username, string password) {
     // Search for the user in the BST
-    User* user = userBST.search(username);
-    if (!user) {
-        cout << "User does not exist.\n";
+    string pass = userCredentials.search(username);
+    if (pass == "[Not Found]")
+    {
+        cout << "[ USER DOES NOT EXIST ... INVALID USER NAME]" << endl;
         return nullptr;
     }
 
-    // Validate the password
-    if (user && user->validatePassword(password)) {
+      User* user = userBST.search(username);
+    if (pass == password)
+    {
+        User* user = userBST.search(username);
         user->login();  // Set the last login time
         cout << "Login successful for " << username << "\n";
         return user;  // Exit immediately if login is successful
     }
+
+    //User* user = userBST.search(username);
+    //if (!user) {
+    //    cout << "User does not exist.\n";
+    //    return nullptr;
+    //}
+
+    //// Validate the password
+    //if (user && user->validatePassword(password)) {
+    //    user->login();  // Set the last login time
+    //    cout << "Login successful for " << username << "\n";
+    //    return user;  // Exit immediately if login is successful
+    //}
 
     cout << "Sorry, your password was incorrect. Please double-check your password.\n";
 
@@ -262,20 +293,24 @@ User* MiniInstagram::login(string& username, string password) {
         // Ask for password reset option
         cout << "Forgot Password? (y/n): ";
         char resetChoice;
-        cin >> resetChoice;
+        resetChoice = _getch();
+        cout << endl;
+        //cin >> resetChoice;
+        
 
         if (resetChoice == 'y' || resetChoice == 'Y') {
-            string email, emailPassword, newPassword;
-            cout << "Enter the email linked to your account: ";
-            cin >> email;
+            string security, emailPassword, newPassword;
+            cout << "Please Answer Security Question" << endl;
+            cout << "Enter your pet name : ";
+            cin >> security;
 
-            if (email == user->getEmail()) {
-                // Simulating email verification
-                cout << "Enter password/verification code sent to your email: ";
-                cin >> emailPassword;
+            if (security == user->getSecurity()) {
+                // Simulating security verification
+               /* cout << "Enter password/verification code sent to your email: ";
+                cin >> emailPassword;*/
 
-                if (user->checkemailpass(email, emailPassword)) {
-                    cout << "Email Verified.\n";
+                //if (user->checkemailpass(security, emailPassword)) {
+                    cout << "Security Verification Passed.\n";
                     cout << "Enter a new password: ";
                     cin >> newPassword;
                     user->resetPassword(newPassword);
@@ -290,13 +325,14 @@ User* MiniInstagram::login(string& username, string password) {
                         cout << "Login successful for " << username << "\n";
                         return user;  // Exit the function after successful login
                     }
-                }
-                else {
-                    cout << "Unable to reset password. Incorrect email or verification code.\n";
-                }
+                //}
+
+                //else {
+                //    cout << "Unable to reset password. Incorrect email or verification code.\n";
+                //}
             }
             else {
-                cout << "Incorrect email linked to the account.\n";
+                cout << "Incorrect answer.\n";
             }
         }
         else {
@@ -317,14 +353,14 @@ User* MiniInstagram::login(string& username, string password) {
 }
 // Password reset logic
 void  User::resetPassword(const string& newPassword) {
-    
-        password = newPassword;  // Reset the password
-        cout << "Password reset successful.\n";
-      
+
+    password = newPassword;  // Reset the password
+    cout << "Password reset successful.\n";
+
 }
-bool User:: checkemailpass(string email,string emailPassword)
+bool User::checkemailpass(string email, string emailPassword)
 {
-    if (this->email == email && this->password == emailPassword) {
+    if (this->security == email && this->password == emailPassword) {
         return true;
     }
     else return false;
@@ -332,6 +368,10 @@ bool User:: checkemailpass(string email,string emailPassword)
 void MiniInstagram::showUsers() {
     cout << "All users:\n";
     userBST.displayAll();
+}
+Graph* MiniInstagram::getRelations()
+{
+    return &userRelations;
 }
 //
 //// User methods
@@ -344,12 +384,13 @@ void MiniInstagram::showUsers() {
 // Friend request functionality in User class
 void User::sendFriendRequest(User* toUser) {
     if (toUser) {
-        toUser->friendRequests.enqueue("Friend request from " + username);
+        toUser->friendRequests.enqueue(username);
+        
         cout << "Friend request sent to " << toUser->getUsername() << ".\n";
     }
 }
 
-void User::viewFriendRequests() {
+void User::viewFriendRequests(Graph* G) {
     if (friendRequests.isEmpty()) {
         cout << "No pending friend requests.\n";
         return;
@@ -364,13 +405,14 @@ void User::viewFriendRequests() {
 
     if (choice == 'y' || choice == 'Y') {
         string request = friendRequests.dequeue();
-        cout << "Processing: " << request << "\n";
+        cout << "Processing: Request from " << request << "\n";
         cout << "Accept (a) or Reject (r)? ";
         char action;
         cin >> action;
 
         if (action == 'a' || action == 'A') {
             notifications.enqueue("You are now friends with " + request);
+            G->addEdge(this->username, request, FRIEND);
             cout << "Friend request accepted.\n";
         }
         else {
@@ -405,7 +447,7 @@ void User::viewNotifications() {
 void User::showProfile() {
     cout << "Profile of " << username << ":\n";
     cout << "City: " << city << "\n";
-    cout << "Email: " << email << "\n";
+    cout << "Email: " << security << "\n";
     cout << "Last Login: " << lastLogin;
     cout << "Recent Posts:\n";
     viewPosts();
@@ -499,17 +541,17 @@ int main()
         cin >> choice;
 
         if (choice == 1) {
-            string username, password, city,email;
+            string username, password, city, security;
             cout << "Enter username: ";
             cin >> username;
             cout << "Enter password: ";
             cin >> password;
             cout << "Enter city: ";
             cin >> city;
-            cout << "Enter email:";
-            cin >> email;
+            cout << "Enter your pet name as security answer:";
+            cin >> security;
             User* newUser = nullptr;
-            platform.signup(username, password, city,email, newUser);
+            platform.signup(username, password, city, security, newUser);
         }
         else if (choice == 2) {
             string username, password;
@@ -555,6 +597,7 @@ int main()
                 User* friendUser = platform.userBST.search(friendUsername);
                 if (friendUser) {
                     currentUser->sendFriendRequest(friendUser);
+                    platform.userRelations.addEdge(currentUser->getUsername(), friendUsername, PENDING);
                 }
                 else {
                     cout << "User not found.\n";
@@ -566,7 +609,7 @@ int main()
         }
         else if (choice == 7) {
             if (currentUser) {
-                currentUser->viewFriendRequests();
+                currentUser->viewFriendRequests(platform.getRelations());
             }
             else {
                 cout << "No user currently logged in.\n";
@@ -611,5 +654,5 @@ int main()
     }
 
     return 0;
-	
+
 }
