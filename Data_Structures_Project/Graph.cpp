@@ -226,6 +226,86 @@ std::string Graph::relationStatusToString(RelationStatus rs) const {
     case BLOCKED: return "Blocked";
     case ACTIVE: return "Active";
     case PENDING: return "Pending";
+    case FOLLOWERS:return"Followers";
+    case FOLLOWING:return"Following";
     default: return "Unknown";
     }
+}
+//////////////
+void Graph::showRelations(const std::string& username) const {
+    Vertex* user = findVertex(username);
+    if (!user) {
+        std::cout << "User not found in the graph.\n";
+        return;
+    }
+
+    std::cout << "Relations for " << username << ":\n";
+    Edge* currentEdge = user->adjacencyList;
+    while (currentEdge) {
+        std::cout << "- " << currentEdge->targetUsername
+            << " (" << relationStatusToString(currentEdge->relationStatus) << ")\n";
+        currentEdge = currentEdge->next;
+    }
+}
+
+void Graph::modifyRelation(const std::string& from, const std::string& to, RelationStatus newStatus) {
+    Vertex* user = findVertex(from);
+    if (!user) {
+        std::cout << "User " << from << " not found.\n";
+        return;
+    }
+
+    Edge* currentEdge = user->adjacencyList;
+    while (currentEdge) {
+        if (currentEdge->targetUsername == to) {
+            currentEdge->relationStatus = newStatus;
+            std::cout << "Relationship with " << to << " updated to "
+                << relationStatusToString(newStatus) << ".\n";
+
+            // If the user is blocked, remove them from the target's adjacency list as well.
+            if (newStatus == BLOCKED) {
+                deleteEdge(to, from);
+                std::cout << to << " is also removed from their adjacency list.\n";
+            }
+            return;
+        }
+        currentEdge = currentEdge->next;
+    }
+
+    std::cout << "No relationship found with " << to << " to modify.\n";
+}
+//// Check if an edge exists between two vertices
+//bool Graph::hasEdge(const std::string& from, const std::string& to) const {
+//    Vertex* fromVertex = findVertex(from);
+//    if (!fromVertex) {
+//        return false; // Vertex not found
+//    }
+//
+//    Edge* current = fromVertex->adjacencyList;
+//    while (current) {
+//        if (current->targetUsername == to) {
+//            return true; // Edge found
+//        }
+//        current = current->next;
+//    }
+//
+//    return false; // Edge not found
+//}
+
+// Check if an edge exists between two vertices with a specific relation status
+bool Graph::hasEdge(const std::string& from, const std::string& to, RelationStatus relationStatus) const {
+    Vertex* fromVertex = findVertex(from);
+    if (!fromVertex) {
+        return false; // Vertex not found
+    }
+
+    Edge* current = fromVertex->adjacencyList;
+    while (current) {
+        if (current->targetUsername == to && current->relationStatus == relationStatus) {
+            return true; // Edge with the specified relation status found
+        }
+        current = current->next;
+    }
+
+    return false; // Edge with the specified relation status not found
 }

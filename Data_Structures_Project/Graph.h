@@ -10,7 +10,9 @@ enum RelationStatus {
     FAMILY,      // Relation type
     BLOCKED,     // Status
     ACTIVE,      // Status
-    PENDING      // Status
+    PENDING,     // Status
+    FOLLOWING,
+    FOLLOWERS
 };
 
 
@@ -50,6 +52,9 @@ public:
     void deleteEdge(const std::string& from, const std::string& to);
     void friendSuggestions(const std::string& username) const;
     void mutualFriends(const std::string& user1, const std::string& user2) const;
+    void modifyRelation(const std::string& from, const std::string& to, RelationStatus newStatus);
+    void showRelations(const std::string& username)const;
+    bool hasEdge(const std::string& from, const std::string& to, RelationStatus relationStatus) const;
 
 private:
     Vertex* findVertex(const std::string& username) const;

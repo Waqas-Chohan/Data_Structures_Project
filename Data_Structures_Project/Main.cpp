@@ -2,6 +2,7 @@
 #include<conio.h>
 #include<string>
 #include<ctime>
+#include <sstream>
 #include "HashMap.h"
 #include "Graph.h"
 
@@ -205,13 +206,19 @@ class User
     // A linked list of Conversation objects (each conversation is between this user and their friend)
     Conversation* conversations;
 public:
+    time_t lastLogin1;
     User(string uname, string pwd, string c, string sec, BST* bst) : username(uname), password(pwd), city(c), platformBST(bst), security(sec), conversations(nullptr) {}
-
+    User(std::string username) : username(username) {
+        lastLogin1 = time(0);  // Store current time as time_t when the user logs in
+    }
     bool validatePassword(const string pass) { return pass == password; }
     string getUsername() { return username; }
     string getSecurity() { return security; }
     void resetPassword(const string& newPassword);
-    void login() { lastLogin = getCurrentTime(); }
+    void login() { 
+        lastLogin = getCurrentTime(); 
+        lastLogin1 = getCurrentTime1();
+    }
     void addPost(const string& postContent) { posts.push(postContent); }
     void showProfile();
     void sendMessage(const string& toUser, const string& message);
@@ -222,6 +229,10 @@ public:
     void createPost(const string& content);
     void viewPosts();
     void viewNotifications();
+    void getStatus();
+    bool isActive();
+    time_t getCurrentTime1();
+    void logout();
     // Helper function to find a conversation with a specific friend
     Conversation* findConversation(const string& friendUsername);
     // Helper function to add a new conversation to the list
@@ -257,6 +268,7 @@ void MiniInstagram::signup(string& username, const string& password, const strin
 }
 
 User* MiniInstagram::login(string& username, string password) {
+    
     // Search for the user in the BST
     string pass = userCredentials.search(username);
     if (pass == "[Not Found]")
@@ -273,6 +285,7 @@ User* MiniInstagram::login(string& username, string password) {
         cout << "Login successful for " << username << "\n";
         return user;  // Exit immediately if login is successful
     }
+
 
     //User* user = userBST.search(username);
     //if (!user) {
@@ -389,7 +402,121 @@ void User::sendFriendRequest(User* toUser) {
         cout << "Friend request sent to " << toUser->getUsername() << ".\n";
     }
 }
+//bool User:: isActive()
+//{
+//    time_t now = time(0); // Current time
+//    struct tm tmLastLogin = {}; // Structure to hold parsed time
+//
+//    // Manually parse the date string (assumes "YYYY-MM-DD HH:MM:SS" format)
+//    std::stringstream ss(lastLogin);
+//    int year, month, day, hour, minute, second;
+//
+//    ss >> year;
+//    ss.ignore(1, '-');
+//    ss >> month;
+//    ss.ignore(1, '-');
+//    ss >> day;
+//    ss.ignore(1, ' ');
+//    ss >> hour;
+//    ss.ignore(1, ':');
+//    ss >> minute;
+//    ss.ignore(1, ':');
+//    ss >> second;
+//
+//    // Fill the tm structure
+//    tmLastLogin.tm_year = year - 1900; // tm_year is years since 1900
+//    tmLastLogin.tm_mon = month - 1;    // tm_mon is months since January (0-11)
+//    tmLastLogin.tm_mday = day;
+//    tmLastLogin.tm_hour = hour;
+//    tmLastLogin.tm_min = minute;
+//    tmLastLogin.tm_sec = second;
+//    tmLastLogin.tm_isdst = -1; // Let mktime determine if daylight saving time is in effect
+//
+//    // Convert the tm structure to time_t
+//    time_t lastActiveTime = mktime(&tmLastLogin);
+//
+//    if (lastActiveTime == -1) {
+//        std::cout << "Error converting tm to time_t.\n";
+//        return false;
+//    }
+//
+//    // Check if the user was active within the last 10 seconds
+//    return difftime(now, lastActiveTime) <= 10;
+//}
+// Utility function to get current time
 
+time_t User:: getCurrentTime1() {
+    return time(0); // Get current time as time_t
+}
+
+//bool User::isActive() {
+//    time_t now = getCurrentTime1();  // Get current time
+//    double diff = difftime(now, lastLogin1);  // Get difference between now and last login time
+//
+//    if (diff <= 10) {
+//        cout << "The user is being logged in for  " << diff << " seconds.";
+//        return true;  // User is active if the difference is less than or equal to 10 seconds
+//    }
+//    return false;  // User is not active if the difference is greater than 10 seconds
+//}
+// Check if the user is logged in and calculate login duration
+bool User::isActive() {
+    if (this == nullptr) {
+        return false;  // If the user object is nullptr, they are logged out
+    }
+
+    time_t now = getCurrentTime1();  // Get current time
+    double diff = difftime(now, lastLogin1);  // Get difference between now and last login time
+
+    if (diff) {
+        return true;  // User is active if the difference is less than or equal to 10 seconds
+    }
+    return false;  // User is not active if the difference is greater 0 seconds
+}
+void User::logout() {
+    // You can add any additional actions needed during logout here
+    lastLogin1 = getCurrentTime1();  // Update last login time to current time when the user logs out
+    cout << "User " << username << " has been logged out.\n";
+}
+//string User:: getStatus() {
+//    return isActive() ? "Active" : "Offline";
+//}
+// Function to get the user's status based on whether they are logged in or logged out
+void User::getStatus() {
+    if (this == nullptr) {
+        cout<< "User is logged out"; // User is logged out, since currentUser is nullptr
+    }
+
+    time_t now = getCurrentTime1();  // Get current time
+    double diff = difftime(now, lastLogin1);  // Get the difference between now and last login/logout time
+
+    if (isActive()) {
+        // Check if the time difference is more than or equal to 60 seconds
+        if (diff >= 60) {
+            int minutes = static_cast<int>(diff) / 60;  // Convert seconds to minutes
+            int seconds = static_cast<int>(diff) % 60;  // Get remaining seconds
+            cout << "Online (Logged in for " << minutes << " minute(s) and " << seconds << " second(s))" << endl;
+        }
+        else if (diff < 60) {
+            cout << "Online (Logged in for " + to_string(static_cast<int>(diff)) + " seconds)" << endl;
+        }
+    }
+    else {
+        // If the user is logged out and the difference is greater than 10 seconds, show Offline
+        if (diff > 10) {
+            // Check if the time difference is more than or equal to 60 seconds
+            if (diff >= 60) {
+                int minutes = static_cast<int>(diff) / 60;  // Convert seconds to minutes
+                int seconds = static_cast<int>(diff) % 60;  // Get remaining seconds
+                cout << "Offline (Logged out for " << minutes << " minute(s) and " << seconds << " second(s))" << endl;
+            }
+            else {
+                cout << "Offline (Logged out for " + to_string(static_cast<int>(diff)) + " seconds)" << endl;
+            }
+        }
+        cout<< "Offline"; // User has been logged out, but it's less than 10 seconds
+    }
+}
 void User::viewFriendRequests(Graph* G) {
     if (friendRequests.isEmpty()) {
         cout << "No pending friend requests.\n";
@@ -411,15 +538,61 @@ void User::viewFriendRequests(Graph* G) {
         cin >> action;
 
         if (action == 'a' || action == 'A') {
-            notifications.enqueue("You are now friends with " + request);
-            G->addEdge(this->username, request, FRIEND);
-            cout << "Friend request accepted.\n";
+            notifications.enqueue(request + " Started following you.");
+            G->addEdge(this->username, request, FOLLOWERS);
+            // Update the status of the user who sent the request to FOLLOWING
+            if (!G->hasEdge(request, this->username, FOLLOWERS))
+            {
+                G->modifyRelation(request, this->username, FOLLOWING); // The user who sent the request is now following
+            }
+            // Check if the other user also follows
+            if (G->hasEdge(request, this->username, FOLLOWERS)) {
+                
+                G->modifyRelation(this->username, request, FRIEND);
+                G->modifyRelation(request, this->username, FRIEND);
+                cout << "You are now friends with " << request << ".\n";
+            }
+            else {
+                cout << request << " Started following you " << ".\n";
+            }
         }
         else {
             cout << "Friend request rejected.\n";
         }
     }
 }
+
+
+//void User::viewFriendRequests(Graph* G) {
+//    if (friendRequests.isEmpty()) {
+//        cout << "No pending friend requests.\n";
+//        return;
+//    }
+//
+//    cout << "Pending friend requests:\n";
+//    friendRequests.display();
+//
+//    cout << "Do you want to accept/reject a request? (y/n): ";
+//    char choice;
+//    cin >> choice;
+//
+//    if (choice == 'y' || choice == 'Y') {
+//        string request = friendRequests.dequeue();
+//        cout << "Processing: Request from " << request << "\n";
+//        cout << "Accept (a) or Reject (r)? ";
+//        char action;
+//        cin >> action;
+//
+//        if (action == 'a' || action == 'A') {
+//            notifications.enqueue("You are now friends with " + request);
+//            G->addEdge(this->username, request, FRIEND);
+//            cout << "Friend request accepted.\n";
+//        }
+//        else {
+//            cout << "Friend request rejected.\n";
+//        }
+//    }
+//}
 // Post functionality in User class
 void User::createPost(const string& content) {
     posts.push("Post: " + content + " (" + getCurrentTime() + ")");
@@ -494,16 +667,31 @@ void User::addConversation(Conversation* conversation) {
         temp->next = conversation;
     }
 }
-
 void User::sendMessage(const string& toUser, const string& message) {
     // Find the conversation for the friend (create one if not found)
-    Conversation* conversation = findConversation(toUser);
-    if (!conversation) {
-        conversation = new Conversation(toUser);
-        addConversation(conversation);  // Add the new conversation to the list
+    Conversation* senderConversation = findConversation(toUser);
+    if (!senderConversation) {
+        senderConversation = new Conversation(toUser);
+        addConversation(senderConversation);  // Add the new conversation to the sender's list
     }
-    conversation->sendMessage(message);
+    senderConversation->sendMessage("You: " + message);  // Mark as sent by the user
+
+    // Find the recipient user
+    User* recipient = platformBST->search(toUser);
+    if (recipient) {
+        // Find or create the recipient's conversation for the current user
+        Conversation* recipientConversation = recipient->findConversation(username);
+        if (!recipientConversation) {
+            recipientConversation = new Conversation(username);
+            recipient->addConversation(recipientConversation);  // Add to recipient's list
+        }
+        recipientConversation->sendMessage(username + ": " + message);  // Mark as received
+    }
+    else {
+        cout << "Error: Recipient user not found.\n";
+    }
 }
+
 
 void User::viewMessages(const string& friendUsername) {
     Conversation* conversation = findConversation(friendUsername);
@@ -537,6 +725,9 @@ int main()
             << "11. Show Profile\n"
             << "12. Logout\n"
             << "13. Exit\n"
+            << "14. Show Relations\n"
+            << "15. Modify Relation\n"
+            << "16. Show Status\n"
             << "Choice: ";
         cin >> choice;
 
@@ -650,7 +841,84 @@ int main()
             else {
                 cout << "No user currently logged in.\n";
             }
+
         }
+        else if (choice == 12) { // Logout
+            if (currentUser) {
+                currentUser->logout();  // Call logout function if user is logged in
+                currentUser = nullptr;  // Set currentUser to nullptr to indicate no user is logged in
+                cout << "Logout successful.\n";
+            }
+            else {
+                cout << "No user currently logged in.\n";
+            }
+            }
+        else if (choice == 14) { // Show Relations
+            if (currentUser) {
+                std::cout << "Relations:\n";
+                platform.getRelations()->showRelations(currentUser->getUsername());
+            }
+            else {
+                std::cout << "No user currently logged in.\n";
+            }
+            }
+        else if (choice == 15) { // Modify Relation
+                if (currentUser) {
+                    std::string friendUsername;
+                    int newRelationStatus;
+                    std::cout << "Enter username to modify relation: ";
+                    std::cin >> friendUsername;
+
+                    std::cout << "Choose new relation status:\n";
+                    std::cout << "1. Friend\n";
+                    std::cout << "2. Family\n";
+                    std::cout << "3. Blocked\n";
+                    std::cout << "Choice: ";
+                    std::cin >> newRelationStatus;
+
+                    if (newRelationStatus >= 1 && newRelationStatus <= 3) {
+                        RelationStatus newStatus = static_cast<RelationStatus>(newRelationStatus - 1);
+                        platform.getRelations()->modifyRelation(currentUser->getUsername(), friendUsername, newStatus);
+                    }
+                    else {
+                        std::cout << "Invalid choice.\n";
+                    }
+                }
+                else {
+                    std::cout << "No user currently logged in.\n";
+                }
+                }
+        else if (choice == 16) { // Show User Status
+                    platform.showUsers();
+                    string user;
+                    cout << "Enter username to check status: ";
+                    cin >> user;
+                    User* targetUser = platform.userBST.search(user);
+                    if (targetUser) {
+                        if (currentUser) {
+                            cout << "User " << currentUser->getUsername() << " is currently: ";
+                            currentUser->getStatus() ;
+                        }
+                        else {
+                            cout << "No user currently logged in.\n";
+                            time_t now = targetUser->getCurrentTime1();  // Get current time
+                            double diff = difftime(now, targetUser->lastLogin1);  // Get the difference between now and last login time
+                            // Check if the time difference is more than or equal to 60 seconds
+                            if (diff >= 60) {
+                                int minutes = static_cast<int>(diff) / 60;  // Convert seconds to minutes
+                                int seconds = static_cast<int>(diff) % 60;  // Get remaining seconds
+                                cout << "Offline (Logged out for " << minutes << " minute(s) and " << seconds << " second(s))" << endl;
+                            }
+                            else {
+                                cout << "Offline (Logged out for " + to_string(static_cast<int>(diff)) + " seconds)" << endl;
+                            }
+                        }
+                    }
+                    else {
+                        cout << "User not found.\n";
+                    }
+                    }
+
     }
 
     return 0;
