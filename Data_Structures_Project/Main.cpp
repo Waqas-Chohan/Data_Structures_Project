@@ -1071,8 +1071,14 @@ int main()
             }
             
         }else if (choice == 18) {
+            string user;
+            cout << "All users " << endl;
+            platform.userBST.displayAll();
+            cout << "Enter username to check followers list : ";
+            cin >> ws;
+            getline(cin, user);
             cout << "Followers : " << endl;
-            vector<string> flowers = platform.userRelations.getFollowers("waqas");
+            vector<string> flowers = platform.userRelations.getFollowersList(user);
             for (const std::string& follower : flowers) {
                 cout << follower << endl;
             }

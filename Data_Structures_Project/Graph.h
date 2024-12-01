@@ -57,6 +57,7 @@ public:
     void showRelations(const std::string& username)const;
     bool hasEdge(const std::string& from, const std::string& to, RelationStatus relationStatus) const;
     std:: vector < std :: string > getFollowers(const std::string& username) const;
+    std::vector<std::string> getFollowersList(const std::string& username) const;
 private:
     
     void deleteEdges(Edge* edge);

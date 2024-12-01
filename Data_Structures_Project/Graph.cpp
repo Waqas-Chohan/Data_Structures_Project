@@ -328,3 +328,21 @@ std::vector<std::string> Graph::getFollowers(const std::string& username) const 
     }
     return followers;
 }
+
+std::vector<std::string> Graph::getFollowersList(const std::string& username) const {
+    Vertex* userVertex = findVertex(username);
+    if (!userVertex) {
+        std::cout << "User " << username << " does not exist.\n";
+        return {};
+    }
+
+    std::vector<std::string> followers;
+    Edge* edge = userVertex->adjacencyList;
+    while (edge != nullptr) {
+        if (edge->relationStatus == FOLLOWERS || edge->relationStatus == FRIEND || edge->relationStatus == FAMILY) {
+            followers.push_back(edge->targetUsername);
+        }
+        edge = edge->next;
+    }
+    return followers;
+}
