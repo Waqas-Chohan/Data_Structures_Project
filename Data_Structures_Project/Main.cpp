@@ -28,6 +28,7 @@ public:
 class Stack {
     Node* top;
 public:
+    
     Stack() : top(nullptr) {}
 
     // Push message onto the stack
@@ -59,6 +60,12 @@ public:
             cout << temp->data << "\n";
             temp = temp->next;
         }
+    }
+    // Return the top element of the stack (no modification)
+    string gettop() {
+        Node* temp=top;
+        if (!temp) return "";  // Return an empty string if stack is empty
+        return temp->data;  // Return the data of the top node
     }
 };
 // Queue implementation using Linked List
@@ -201,6 +208,7 @@ class User
     string security;
     Queue friendRequests;
     Stack posts;
+    Stack timeline;
     Queue notifications;
     BST* platformBST;
     // A linked list of Conversation objects (each conversation is between this user and their friend)
@@ -226,19 +234,24 @@ public:
     void sendFriendRequest(User* toUser);
     void viewFriendRequests(Graph* G);
     bool checkemailpass(string email, string emailPassword);
-    void createPost(const string& content);
+    //void createPost(const string& content);
+    void createPost(const std::string& content, Graph* relationshipGraph);
     void viewPosts();
     void viewNotifications();
     void getStatus();
     bool isActive();
+    void viewTimeline();
     time_t getCurrentTime1();
     void logout();
+    Stack getPosts();
+    void populateTimeline(Graph* relationshipGraph);
     // Helper function to find a conversation with a specific friend
     Conversation* findConversation(const string& friendUsername);
     // Helper function to add a new conversation to the list
     void addConversation(Conversation* conversation);
     friend class MiniInstagram;
 };
+
 // Class representing the platform's graph (MiniInstagram)
 class MiniInstagram {
 private:
@@ -378,6 +391,56 @@ bool User::checkemailpass(string email, string emailPassword)
     }
     else return false;
 }
+Stack User::getPosts()
+{
+     if (!posts.isEmpty())
+     {
+         return posts;
+     }
+     else cout << "Ther is no post.";
+     return posts;
+}
+void User::populateTimeline(Graph* relationshipGraph) {
+    // Clear the current timeline
+    while (!timeline.isEmpty()) {
+        timeline.pop();
+    }
+
+    // Get the list of followers
+    std::vector<std::string> followers = relationshipGraph->getFollowers(username);
+    if (followers.empty()) {
+        std::cout << "No followers to fetch posts from.\n";
+        return;
+    }
+
+    // Fetch posts from each follower and push them to the timeline
+    for (const std::string& follower : followers) {
+        Vertex* followerVertex = relationshipGraph->findVertex(follower);
+        if (!followerVertex) continue;
+
+        // Assuming we can access the `posts` stack of a user (retrieve by username)
+        User* followerUser = platformBST->search(follower); // Platform BST to retrieve user by username
+        if (!followerUser) continue;
+
+        Stack followerPosts = followerUser->getPosts(); // Assume `getPosts` returns the stack of posts
+        Stack tempPosts; // Temporary stack to reverse order (latest posts first)
+
+        // Reverse order to maintain chronological order in timeline
+        while (!followerPosts.isEmpty()) {
+            tempPosts.push(followerPosts.gettop());
+            followerPosts.pop();
+        }
+
+        // Push reversed posts into timeline
+        while (!tempPosts.isEmpty()) {
+            timeline.push(follower + ": " + tempPosts.gettop());
+            tempPosts.pop();
+        }
+    }
+
+    std::cout << "Timeline updated successfully.\n";
+}
+
 void MiniInstagram::showUsers() {
     cout << "All users:\n";
     userBST.displayAll();
@@ -386,7 +449,33 @@ Graph* MiniInstagram::getRelations()
 {
     return &userRelations;
 }
+void User::viewTimeline() {
+    if (timeline.isEmpty()) {
+        std::cout << "Your timeline is empty.\n";
+        return;
+    }
+
+    std::cout << "Your timeline:\n";
+    Stack tempTimeline = timeline; // Copy stack to display without modifying it
+
+    while (!tempTimeline.isEmpty()) {
+        std::cout << tempTimeline.gettop() << "\n";
+        tempTimeline.pop();
+    }
+}
+
+// Function to view the user's timeline
+//void viewTimeline() {
+//    if (timeline.isEmpty()) {
+//        cout << "No activity in your timeline.\n";
+//        return;
+//    }
 //
+//    cout << "Your timeline:\n";
+//    timeline.display();
+//}
+//
+// 
 //// User methods
 //void User::showProfile() {
 //    cout << "Profile: " << username << "\n";
@@ -594,9 +683,26 @@ void User::viewFriendRequests(Graph* G) {
 //    }
 //}
 // Post functionality in User class
-void User::createPost(const string& content) {
-    posts.push("Post: " + content + " (" + getCurrentTime() + ")");
-    cout << "Post created successfully.\n";
+//void User::createPost(const string& content) {
+//    posts.push("Post: " + content + " (" + getCurrentTime() + ")");
+//    string timelineEntry = "User: " + username + " | " + content;
+//    timeline.push(timelineEntry); // Add to the user's timeline stack
+//    cout << "Post created successfully.\n";
+//}
+void User::createPost(const std::string& content, Graph* relationshipGraph) {
+    // Add post to the user's own posts stack
+    std::string post = "Post: " + content + " (" + getCurrentTime() + ")";
+    posts.push(post);
+    std::cout << "Post created successfully.\n";
+
+    // Push the post to followers' timelines
+    std::vector<std::string> followers = relationshipGraph->getFollowers(username);
+    for (const std::string& follower : followers) {
+        User* followerUser = platformBST->search(follower);
+        if (followerUser) {
+            followerUser->timeline.push(username + ": " + post);
+        }
+    }
 }
 
 void User::viewPosts() {
@@ -728,6 +834,7 @@ int main()
             << "14. Show Relations\n"
             << "15. Modify Relation\n"
             << "16. Show Status\n"
+            << "17. view timeline\n"
             << "Choice: ";
         cin >> choice;
 
@@ -812,7 +919,7 @@ int main()
                 cout << "Enter post content: ";
                 cin >> ws;
                 getline(cin, postContent);
-                currentUser->createPost(postContent);
+                currentUser->createPost(postContent,platform.getRelations());
             }
             else {
                 cout << "No user currently logged in.\n";
@@ -918,6 +1025,15 @@ int main()
                         cout << "User not found.\n";
                     }
                     }
+        else if (choice == 17) {
+            if (currentUser) {
+                currentUser->viewTimeline();
+            }
+            else {
+                cout << "No user currently logged in.\n";
+            }
+            
+        }
 
     }
 

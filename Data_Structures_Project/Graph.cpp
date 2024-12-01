@@ -1,5 +1,5 @@
 #include "Graph.h"
-
+#include<vector>
 // Constructor
 Graph::Graph() : head(nullptr) {}
 
@@ -308,4 +308,23 @@ bool Graph::hasEdge(const std::string& from, const std::string& to, RelationStat
     }
 
     return false; // Edge with the specified relation status not found
+}
+std::vector<std::string> Graph::getFollowers(const std::string& username) const {
+    Vertex* userVertex = findVertex(username);
+    if (!userVertex) {
+        std::cout << "User " << username << " does not exist.\n";
+        return {};
+    }
+
+    std::vector<std::string> followers;
+    for (Vertex* current = head; current != nullptr; current = current->next) {
+        Edge* edge = current->adjacencyList;
+        while (edge != nullptr) {
+            if (edge->targetUsername == username && edge->relationStatus == FOLLOWERS) {
+                followers.push_back(current->username);
+            }
+            edge = edge->next;
+        }
+    }
+    return followers;
 }

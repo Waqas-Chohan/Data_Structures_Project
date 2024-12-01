@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include<vector>
 
 // Enum for relation type and status
 enum RelationStatus {
@@ -55,11 +56,13 @@ public:
     void modifyRelation(const std::string& from, const std::string& to, RelationStatus newStatus);
     void showRelations(const std::string& username)const;
     bool hasEdge(const std::string& from, const std::string& to, RelationStatus relationStatus) const;
-
+    std:: vector < std :: string > getFollowers(const std::string& username) const;
 private:
-    Vertex* findVertex(const std::string& username) const;
+    
     void deleteEdges(Edge* edge);
     std::string relationStatusToString(RelationStatus rs) const;
+public:
+    Vertex* findVertex(const std::string& username) const;
 };
 
 #endif // GRAPH_H
