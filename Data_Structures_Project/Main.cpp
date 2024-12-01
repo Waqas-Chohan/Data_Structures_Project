@@ -67,6 +67,28 @@ public:
         if (!temp) return "";  // Return an empty string if stack is empty
         return temp->data;  // Return the data of the top node
     }
+    // Copy function to create and return a new stack
+    Stack copy() const {
+        Stack newStack;
+        if (!top) return newStack; // Return empty stack if the original is empty
+
+        // Use a temporary stack to reverse the order of elements
+        Stack tempStack;
+
+        // Traverse the original stack and push elements into tempStack
+        Node* current = top;
+        while (current) {
+            tempStack.push(current->data);
+            current = current->next;
+        }
+
+        // Pop elements from tempStack into newStack to maintain original order
+        while (!tempStack.isEmpty()) {
+            newStack.push(tempStack.pop());
+        }
+
+        return newStack;
+    }
 };
 // Queue implementation using Linked List
 class Queue {
@@ -100,10 +122,22 @@ public:
         return front == nullptr;
     }
 
+    void displayAndClear() {
+        if (!front)
+        {
+            cout << "No Notifications to show." << endl;
+        }
+        while (front) {
+            cout << front->data << "\n";
+            front = front->next;
+        }
+        front = rear = nullptr;
+    }
+
     void display() {
         Node* temp = front;
         while (temp) {
-            cout << "Friend Request from : " << temp->data << "\n";
+            cout << temp->data << "\n";
             temp = temp->next;
         }
     }
@@ -456,7 +490,7 @@ void User::viewTimeline() {
     }
 
     std::cout << "Your timeline:\n";
-    Stack tempTimeline = timeline; // Copy stack to display without modifying it
+    Stack tempTimeline = timeline.copy(); // Copy stack to display without modifying it
 
     while (!tempTimeline.isEmpty()) {
         std::cout << tempTimeline.gettop() << "\n";
@@ -487,7 +521,7 @@ void User::viewTimeline() {
 void User::sendFriendRequest(User* toUser) {
     if (toUser) {
         toUser->friendRequests.enqueue(username);
-        
+        toUser->notifications.enqueue(username + " Sent you a friend request.");
         cout << "Friend request sent to " << toUser->getUsername() << ".\n";
     }
 }
@@ -606,7 +640,7 @@ void User::getStatus() {
         cout<< "Offline"; // User has been logged out, but it's less than 10 seconds
     }
 }
-void User::viewFriendRequests(Graph* G) {
+    void User::viewFriendRequests(Graph* G) {
     if (friendRequests.isEmpty()) {
         cout << "No pending friend requests.\n";
         return;
@@ -646,6 +680,7 @@ void User::viewFriendRequests(Graph* G) {
             }
         }
         else {
+            G->deleteEdge(request, username);
             cout << "Friend request rejected.\n";
         }
     }
@@ -721,7 +756,7 @@ void User::viewNotifications() {
     }
 
     cout << "Notifications:\n";
-    notifications.display();
+    notifications.displayAndClear();
 }
 void User::showProfile() {
     cout << "Profile of " << username << ":\n";
@@ -792,6 +827,7 @@ void User::sendMessage(const string& toUser, const string& message) {
             recipient->addConversation(recipientConversation);  // Add to recipient's list
         }
         recipientConversation->sendMessage(username + ": " + message);  // Mark as received
+        recipient->notifications.enqueue(username + " sent you a message.");
     }
     else {
         cout << "Error: Recipient user not found.\n";
@@ -835,6 +871,7 @@ int main()
             << "15. Modify Relation\n"
             << "16. Show Status\n"
             << "17. view timeline\n"
+            << "18. Show Followers\n"
             << "Choice: ";
         cin >> choice;
 
@@ -1033,6 +1070,12 @@ int main()
                 cout << "No user currently logged in.\n";
             }
             
+        }else if (choice == 18) {
+            cout << "Followers : " << endl;
+            vector<string> flowers = platform.userRelations.getFollowers("waqas");
+            for (const std::string& follower : flowers) {
+                cout << follower << endl;
+            }
         }
 
     }

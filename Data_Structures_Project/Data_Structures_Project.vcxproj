@@ -128,7 +128,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Graph.cpp" />
-    <ClCompile Include="hash.cpp" />
     <ClCompile Include="HashMap.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
