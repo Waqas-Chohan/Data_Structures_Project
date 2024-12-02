@@ -491,26 +491,7 @@ void User::viewTimeline() {
     }
 }
 
-// Function to view the user's timeline
-//void viewTimeline() {
-//    if (timeline.isEmpty()) {
-//        cout << "No activity in your timeline." << endl;
-//        return;
-//    }
-//
-//    cout << "Your timeline:" << endl;
-//    timeline.display();
-//}
-//
-// 
-//// User methods
-//void User::showProfile() {
-//    cout << "Profile: " << username << "" << endl;
-//    cout << "City: " << city << "" << endl;
-//    cout << "Last Login: " << lastLogin;
-//}
-/////////////////////////////////////////////
-// Friend request functionality in User class
+
 void User::sendFriendRequest(User* toUser) {
     if (toUser) {
         toUser->friendRequests.enqueue(username);
@@ -518,64 +499,13 @@ void User::sendFriendRequest(User* toUser) {
         cout << "Friend request sent to " << toUser->getUsername() << "." << endl;
     }
 }
-//bool User:: isActive()
-//{
-//    time_t now = time(0); // Current time
-//    struct tm tmLastLogin = {}; // Structure to hold parsed time
-//
-//    // Manually parse the date string (assumes "YYYY-MM-DD HH:MM:SS" format)
-//    std::stringstream ss(lastLogin);
-//    int year, month, day, hour, minute, second;
-//
-//    ss >> year;
-//    ss.ignore(1, '-');
-//    ss >> month;
-//    ss.ignore(1, '-');
-//    ss >> day;
-//    ss.ignore(1, ' ');
-//    ss >> hour;
-//    ss.ignore(1, ':');
-//    ss >> minute;
-//    ss.ignore(1, ':');
-//    ss >> second;
-//
-//    // Fill the tm structure
-//    tmLastLogin.tm_year = year - 1900; // tm_year is years since 1900
-//    tmLastLogin.tm_mon = month - 1;    // tm_mon is months since January (0-11)
-//    tmLastLogin.tm_mday = day;
-//    tmLastLogin.tm_hour = hour;
-//    tmLastLogin.tm_min = minute;
-//    tmLastLogin.tm_sec = second;
-//    tmLastLogin.tm_isdst = -1; // Let mktime determine if daylight saving time is in effect
-//
-//    // Convert the tm structure to time_t
-//    time_t lastActiveTime = mktime(&tmLastLogin);
-//
-//    if (lastActiveTime == -1) {
-//        std::cout << "Error converting tm to time_t." << endl;
-//        return false;
-//    }
-//
-//    // Check if the user was active within the last 10 seconds
-//    return difftime(now, lastActiveTime) <= 10;
-//}
-// Utility function to get current time
+
 
 time_t User:: getCurrentTime1() {
     return time(0); // Get current time as time_t
 }
 
-//bool User::isActive() {
-//    time_t now = getCurrentTime1();  // Get current time
-//    double diff = difftime(now, lastLogin1);  // Get difference between now and last login time
-//
-//    if (diff <= 10) {
-//        cout << "The user is being logged in for  " << diff << " seconds.";
-//        return true;  // User is active if the difference is less than or equal to 10 seconds
-//    }
-//    return false;  // User is not active if the difference is greater than 10 seconds
-//}
-// Check if the user is logged in and calculate login duration
+
 bool User::isActive() {
     if (this == nullptr) {
         return false;  // If the user object is nullptr, they are logged out
@@ -594,9 +524,7 @@ void User::logout() {
     lastLogin1 = getCurrentTime1();  // Update last login time to current time when the user logs out
     cout << "User " << username << " has been logged out." << endl;
 }
-//string User:: getStatus() {
-//    return isActive() ? "Active" : "Offline";
-//}
+
 // Function to get the user's status based on whether they are logged in or logged out
 void User::getStatus() {
     if (this == nullptr) {
@@ -635,7 +563,7 @@ void User::getStatus() {
 }
     void User::viewFriendRequests(Graph* G) {
     if (friendRequests.isEmpty()) {
-        cout << "No pending friend requests." << endl;
+        cout << "[ No pending friend requests. ]" << endl;
         return;
     }
 
@@ -668,7 +596,7 @@ void User::getStatus() {
                 
                 G->modifyRelation(this->username, request, FRIEND);
                 G->modifyRelation(request, this->username, FRIEND);
-                cout << "You are now friends with " << request << "." << endl;
+                cout << GREEN << "You are now friends with " << request << "." << RESET << endl;
             }
             else {
                 cout << request << " Started following you " << "." << endl;
@@ -699,7 +627,7 @@ void User::createPost(const std::string& content, Graph* relationshipGraph) {
 
 void User::viewPosts() {
     if (posts.isEmpty()) {
-        cout << "No posts to show." << endl;
+        cout << "[ No posts to show. ]" << endl;
         return;
     }
 
@@ -708,7 +636,7 @@ void User::viewPosts() {
 }
 void User::viewNotifications() {
     if (notifications.isEmpty()) {
-        cout << "No notifications." << endl;
+        cout << "[ No notifications. ]" << endl;
         return;
     }
 
@@ -857,7 +785,7 @@ int main()
                 cout << "Enter friend's username: ";
                 cin >> friendUsername;
                 cout << "Enter your message: ";
-                cin >> ws;  // To handle space before message input
+                cin >> ws;
                 getline(cin, message);
                 currentUser->sendMessage(friendUsername, message);
             }
@@ -887,11 +815,11 @@ int main()
                     platform.userRelations.addEdge(currentUser->getUsername(), friendUsername, PENDING);
                 }
                 else {
-                    cout << "User not found." << endl;
+                    cout << "[User not found.]" << endl;
                 }
             }
             else {
-                cout << "No user currently logged in." << endl;
+                cout << "[No user currently logged in.]" << endl;
             }
             break;
         case 7:
@@ -899,7 +827,7 @@ int main()
                 currentUser->viewFriendRequests(platform.getRelations());
             }
             else {
-                cout << "No user currently logged in." << endl;
+                cout << "[No user currently logged in.]" << endl;
             }
             break;
         case 8:
@@ -911,7 +839,7 @@ int main()
                 currentUser->createPost(postContent, platform.getRelations());
             }
             else {
-                cout << "No user currently logged in." << endl;
+                cout << "[No user currently logged in.]" << endl;
             }
             break;
         case 9:

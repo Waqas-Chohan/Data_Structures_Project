@@ -17,7 +17,7 @@ Graph::~Graph() {
 // Add a vertex
 void Graph::addVertex(const std::string& username) {
     if (findVertex(username)) {
-        std::cout << "Vertex with username " << username << " already exists.\n";
+        std::cout << "User with username " << username << " already exists." << std::endl;
         return;
     }
 
@@ -33,7 +33,7 @@ void Graph::addEdge(const std::string& from, const std::string& to,
     Vertex* toVertex = findVertex(to);
 
     if (!fromVertex || !toVertex) {
-        std::cout << "One or both vertices not found.\n";
+        std::cout << "One or both users not found." << std::endl;
         return;
     }
 
@@ -41,7 +41,6 @@ void Graph::addEdge(const std::string& from, const std::string& to,
     Edge* current = fromVertex->adjacencyList;
     while (current) {
         if (current->targetUsername == to) {
-            std::cout << "Edge from " << from << " to " << to << " already exists.\n";
             return;
         }
         current = current->next;
@@ -57,15 +56,15 @@ void Graph::addEdge(const std::string& from, const std::string& to,
 void Graph::displayGraph() const {
     Vertex* current = head;
     while (current) {
-        std::cout << "Vertex: " << current->username << "\nEdges:\n";
+        std::cout << "User: " << current->username << std::endl << "Relations:" << std::endl;
         Edge* edge = current->adjacencyList;
         while (edge) {
             std::cout << "  -> " << edge->targetUsername
-                << " [Relation: " << relationStatusToString(edge->relationStatus) << "]\n";
+                << relationStatusToString(edge->relationStatus) << "]" << std::endl;
             edge = edge->next;
         }
         current = current->next;
-        std::cout << "\n";
+        std::cout << std::endl;
     }
 }
 
@@ -73,7 +72,7 @@ void Graph::displayGraph() const {
 void Graph::friendSuggestions(const std::string& username) const {
     Vertex* userVertex = findVertex(username);
     if (!userVertex) {
-        std::cout << "User " << username << " not found.\n";
+        std::cout << "User " << username << " not found." << std::endl;
         return;
     }
 
@@ -90,7 +89,7 @@ void Graph::friendSuggestions(const std::string& username) const {
     }
 
     // Find friends of friends
-    std::cout << "Friend suggestions for " << username << ":\n";
+    std::cout << "Friend suggestions for " << username << ":" << std::endl;
     edge = userVertex->adjacencyList;
     while (edge) {
         Vertex* friendVertex = findVertex(edge->targetUsername);
@@ -107,7 +106,7 @@ void Graph::friendSuggestions(const std::string& username) const {
                 }
                 if (!isVisited) {
                     visited[visitedCount++] = friendEdge->targetUsername;
-                    std::cout << "  -> " << friendEdge->targetUsername << "\n";
+                    std::cout << "  -> " << friendEdge->targetUsername << "" << std::endl;
                 }
                 friendEdge = friendEdge->next;
             }
@@ -122,11 +121,11 @@ void Graph::mutualFriends(const std::string& user1, const std::string& user2) co
     Vertex* user2Vertex = findVertex(user2);
 
     if (!user1Vertex || !user2Vertex) {
-        std::cout << "One or both users not found.\n";
+        std::cout << "One or both users not found." << std::endl;
         return;
     }
 
-    std::cout << "Mutual friends between " << user1 << " and " << user2 << ":\n";
+    std::cout << "Mutual friends between " << user1 << " and " << user2 << ":" << std::endl;
 
     // Compare adjacency lists for mutual friends
     Edge* edge1 = user1Vertex->adjacencyList;
@@ -134,7 +133,7 @@ void Graph::mutualFriends(const std::string& user1, const std::string& user2) co
         Edge* edge2 = user2Vertex->adjacencyList;
         while (edge2) {
             if (edge1->targetUsername == edge2->targetUsername) {
-                std::cout << "  -> " << edge1->targetUsername << "\n";
+                std::cout << "  -> " << edge1->targetUsername << "" << std::endl;
             }
             edge2 = edge2->next;
         }
@@ -159,20 +158,20 @@ void Graph::deleteVertex(const std::string& username) {
             // Delete edges of this vertex
             deleteEdges(current->adjacencyList);
             delete current;
-            std::cout << "Vertex " << username << " deleted.\n";
+            std::cout << "User " << username << " deleted." << std::endl;
             return;
         }
         prev = current;
         current = current->next;
     }
-    std::cout << "Vertex " << username << " not found.\n";
+    std::cout << "User " << username << " not found." << std::endl;
 }
 
 // Delete an edge
 void Graph::deleteEdge(const std::string& from, const std::string& to) {
     Vertex* fromVertex = findVertex(from);
     if (!fromVertex) {
-        std::cout << "Vertex " << from << " not found.\n";
+        std::cout << "User " << from << " not found." << std::endl;
         return;
     }
 
@@ -188,13 +187,13 @@ void Graph::deleteEdge(const std::string& from, const std::string& to) {
                 fromVertex->adjacencyList = current->next;
             }
             delete current;
-            std::cout << "Edge from " << from << " to " << to << " deleted.\n";
+            std::cout << "Relation from " << from << " to " << to << " deleted." << std::endl;
             return;
         }
         prev = current;
         current = current->next;
     }
-    std::cout << "Edge from " << from << " to " << to << " not found.\n";
+    std::cout << "Relation from " << from << " to " << to << " not found." << std::endl;
 }
 
 // Helper to find a vertex
@@ -235,15 +234,15 @@ std::string Graph::relationStatusToString(RelationStatus rs) const {
 void Graph::showRelations(const std::string& username) const {
     Vertex* user = findVertex(username);
     if (!user) {
-        std::cout << "User not found in the graph.\n";
+        std::cout << "User not found in the graph." << std::endl;
         return;
     }
 
-    std::cout << "Relations for " << username << ":\n";
+    std::cout << "Relations for " << username << ":" << std::endl;
     Edge* currentEdge = user->adjacencyList;
     while (currentEdge) {
         std::cout << "- " << currentEdge->targetUsername
-            << " (" << relationStatusToString(currentEdge->relationStatus) << ")\n";
+            << " (" << relationStatusToString(currentEdge->relationStatus) << ")" << std::endl;
         currentEdge = currentEdge->next;
     }
 }
@@ -251,7 +250,7 @@ void Graph::showRelations(const std::string& username) const {
 void Graph::modifyRelation(const std::string& from, const std::string& to, RelationStatus newStatus) {
     Vertex* user = findVertex(from);
     if (!user) {
-        std::cout << "User " << from << " not found.\n";
+        std::cout << "User " << from << " not found." << std::endl;
         return;
     }
 
@@ -260,37 +259,19 @@ void Graph::modifyRelation(const std::string& from, const std::string& to, Relat
         if (currentEdge->targetUsername == to) {
             currentEdge->relationStatus = newStatus;
             std::cout << "Relationship with " << to << " updated to "
-                << relationStatusToString(newStatus) << ".\n";
+                << relationStatusToString(newStatus) << "." << std::endl;
 
             // If the user is blocked, remove them from the target's adjacency list as well.
             if (newStatus == BLOCKED) {
                 deleteEdge(to, from);
-                std::cout << to << " is also removed from their adjacency list.\n";
             }
             return;
         }
         currentEdge = currentEdge->next;
     }
 
-    std::cout << "No relationship found with " << to << " to modify.\n";
+    std::cout << "No relationship found with " << to << " to modify." << std::endl;
 }
-//// Check if an edge exists between two vertices
-//bool Graph::hasEdge(const std::string& from, const std::string& to) const {
-//    Vertex* fromVertex = findVertex(from);
-//    if (!fromVertex) {
-//        return false; // Vertex not found
-//    }
-//
-//    Edge* current = fromVertex->adjacencyList;
-//    while (current) {
-//        if (current->targetUsername == to) {
-//            return true; // Edge found
-//        }
-//        current = current->next;
-//    }
-//
-//    return false; // Edge not found
-//}
 
 // Check if an edge exists between two vertices with a specific relation status
 bool Graph::hasEdge(const std::string& from, const std::string& to, RelationStatus relationStatus) const {
@@ -312,7 +293,7 @@ bool Graph::hasEdge(const std::string& from, const std::string& to, RelationStat
 std::vector<std::string> Graph::getFollowers(const std::string& username) const {
     Vertex* userVertex = findVertex(username);
     if (!userVertex) {
-        std::cout << "User " << username << " does not exist.\n";
+        std::cout << "User " << username << " does not exist." << std::endl;
         return {};
     }
 
@@ -332,7 +313,7 @@ std::vector<std::string> Graph::getFollowers(const std::string& username) const 
 std::vector<std::string> Graph::getFollowersList(const std::string& username) const {
     Vertex* userVertex = findVertex(username);
     if (!userVertex) {
-        std::cout << "User " << username << " does not exist.\n";
+        std::cout << "User " << username << " does not exist." << std::endl;
         return {};
     }
 
