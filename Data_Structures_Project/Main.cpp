@@ -649,16 +649,18 @@ void User::getStatus() {
     cout << "Pending friend requests:\n";
     friendRequests.display();
 
-    cout << "Do you want to accept/reject a request? (y/n): ";
-    char choice;
-    cin >> choice;
+    cout << "Do you want to manage requests? (y/n): ";
+    char choice = _getche();
+    cout << endl;
+    //cin >> choice;
 
     if (choice == 'y' || choice == 'Y') {
         string request = friendRequests.dequeue();
         cout << "Processing: Request from " << request << "\n";
         cout << "Accept (a) or Reject (r)? ";
-        char action;
-        cin >> action;
+        char action = _getche();
+        //cin >> action;
+        cout << endl;
 
         if (action == 'a' || action == 'A') {
             notifications.enqueue(request + " Started following you.");
@@ -686,44 +688,6 @@ void User::getStatus() {
     }
 }
 
-
-//void User::viewFriendRequests(Graph* G) {
-//    if (friendRequests.isEmpty()) {
-//        cout << "No pending friend requests.\n";
-//        return;
-//    }
-//
-//    cout << "Pending friend requests:\n";
-//    friendRequests.display();
-//
-//    cout << "Do you want to accept/reject a request? (y/n): ";
-//    char choice;
-//    cin >> choice;
-//
-//    if (choice == 'y' || choice == 'Y') {
-//        string request = friendRequests.dequeue();
-//        cout << "Processing: Request from " << request << "\n";
-//        cout << "Accept (a) or Reject (r)? ";
-//        char action;
-//        cin >> action;
-//
-//        if (action == 'a' || action == 'A') {
-//            notifications.enqueue("You are now friends with " + request);
-//            G->addEdge(this->username, request, FRIEND);
-//            cout << "Friend request accepted.\n";
-//        }
-//        else {
-//            cout << "Friend request rejected.\n";
-//        }
-//    }
-//}
-// Post functionality in User class
-//void User::createPost(const string& content) {
-//    posts.push("Post: " + content + " (" + getCurrentTime() + ")");
-//    string timelineEntry = "User: " + username + " | " + content;
-//    timeline.push(timelineEntry); // Add to the user's timeline stack
-//    cout << "Post created successfully.\n";
-//}
 void User::createPost(const std::string& content, Graph* relationshipGraph) {
     // Add post to the user's own posts stack
     std::string post = "Post: " + content + " (" + getCurrentTime() + ")";
@@ -769,17 +733,6 @@ void User::showProfile() {
     viewNotifications();
 }
 
-//void User::sendMessage(const string& toUser, const string& message) {
-//    // Find the conversation for the friend (create one if not found)
-//    Conversation* conversation = findConversation(toUser);
-//    if (!conversation) {
-//        conversation = new Conversation(toUser);
-//        conversation->sendMessage("Message sent to " + toUser + ": " + message);
-//    }
-//    else {
-//        conversation->sendMessage("Message sent to " + toUser + ": " + message);
-//    }
-//}
 
 
 
@@ -853,7 +806,7 @@ int main()
 
     while (true) {
         int choice;
-        cout << "\nMenu:\n"
+        cout << "Menu:\n"
             << "1. Signup\n"
             << "2. Login\n"
             << "3. Show All Users\n"
@@ -872,6 +825,8 @@ int main()
             << "16. Show Status\n"
             << "17. view timeline\n"
             << "18. Show Followers\n"
+            << "19. Get Friend Suggestions\n"
+            << "20. Find Mutuals\n"
             << "Choice: ";
         cin >> choice;
 
@@ -1082,6 +1037,31 @@ int main()
             for (const std::string& follower : flowers) {
                 cout << follower << endl;
             }
+        }else if (choice == 19) {
+            string user;
+            cout << "All users " << endl;
+            platform.userBST.displayAll();
+            cout << "Enter username to get friend suggestions : ";
+            cin >> ws;
+            getline(cin, user);
+            platform.userRelations.friendSuggestions(user);
+            /*cout << "Followers : " << endl;
+            vector<string> flowers = platform.userRelations.getFollowersList(user);
+            for (const std::string& follower : flowers) {
+                cout << follower << endl;
+            }*/
+        }else if (choice == 20) {
+            string user1, user2;
+            cout << "All users " << endl;
+            platform.userBST.displayAll();
+            cout << "Enter first username: ";
+            cin >> ws;
+            getline(cin, user1);
+            cout << "Enter second username: ";
+            cin >> ws;
+            getline(cin, user2);
+            cout << "Followers : " << endl;
+            platform.userRelations.mutualFriends(user1, user2);
         }
 
     }
