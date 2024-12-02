@@ -2,6 +2,7 @@
 #include<conio.h>
 #include<string>
 #include<ctime>
+#include<regex>
 #include <sstream>
 #include "HashMap.h"
 #include "Graph.h"
@@ -707,7 +708,44 @@ void User::sendMessage(const string& toUser, const string& message) {
         showError("[ Recipient user not found. ]");
     }
 }
+void signup(MiniInstagram& platform) {
+    string username, password, city, security;
 
+    cout << "Enter username: ";
+    cin >> username;
+
+    while (true) { // Loop until the user enters a valid password
+        cout << "Enter password (must be 8+ characters, no spaces, at least one number): ";
+        cin >> ws; // Clear any leading whitespace
+        getline(cin, password); // Read the entire line, including spaces if any
+
+        bool hasNumber = std::regex_search(password, std::regex("\\d")); // At least one number
+        bool hasNoSpaces = !std::regex_search(password, std::regex("\\s")); // No spaces
+        bool hasMinLength = password.length() >= 8; // At least 8 characters
+
+        if (hasNumber && hasNoSpaces && hasMinLength) {
+            cout << "Password is valid.\n";
+            break;
+        }
+        else {
+            cout << "Invalid password!\n";
+            if (!hasMinLength)
+                cout << "- Password must be at least 8 characters long.\n";
+            else if (!hasNoSpaces)
+                cout << "- Password must not contain spaces.\n";
+            else if (!hasNumber)
+                cout << "- Password must include at least one number.\n";
+        }
+    }
+
+    cout << "Enter city: ";
+    cin >> city;
+    cout << "Enter your pet name as security answer: ";
+    cin >> security;
+
+    User* newUser = nullptr;
+    platform.signup(username, password, city, security, newUser);
+}
 
 void User::viewMessages(const string& friendUsername) {
     Conversation* conversation = findConversation(friendUsername);
@@ -753,7 +791,8 @@ int main()
 
         switch (choice) {
         case 1: {
-            string username, password, city, security;
+            signup(platform);
+          /*  string username, password, city, security;
             cout << "Enter username: ";
             cin >> username;
             cout << "Enter password: ";
@@ -764,7 +803,7 @@ int main()
             cin >> security;
             User* newUser = nullptr;
             platform.signup(username, password, city, security, newUser);
-            break;
+            break;*/
         }
         case 2:
         {
