@@ -10,12 +10,12 @@ void Helper::load()
 {
     system("cls");
     system("Color 3F");
-    cout << "\n\n\n\n\n\n\n\n\n\t\t\t\t*WELCOME TO MINI INSTAGRAM*";
+    cout << "\n\n\n\n\n\n\n\n\n\t\t\t\tWELCOME TO MINI INSTAGRAM";
     // Set ASCII to print special character. // Code page 437
     SetConsoleCP(437);
     SetConsoleOutputCP(437);
     int barl = 177, bar2 = 219;
-    cout << "\n\n\n\t\t\t\t";
+    cout << "\n\n\t\t\t\t";
     for (int i = 0; i < 25; i++)
         cout << (char)barl;
     cout << "\r";

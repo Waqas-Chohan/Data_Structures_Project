@@ -765,7 +765,7 @@ int main()
     Helper h;
     h.zoomConsoleScreen(200);
     h.FullScreen();
-    //h.load();
+    h.load();
     
     MiniInstagram platform;
     User* currentUser = nullptr;
