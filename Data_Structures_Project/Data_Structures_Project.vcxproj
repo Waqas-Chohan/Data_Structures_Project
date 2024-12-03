@@ -129,11 +129,13 @@
   <ItemGroup>
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="HashMap.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graph.h" />
     <ClInclude Include="HashMap.h" />
+    <ClInclude Include="Helper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

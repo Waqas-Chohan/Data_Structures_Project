@@ -5,9 +5,11 @@
 #include<regex>
 #include <sstream>
 #include "HashMap.h"
+#include "Helper.h"
 #include "Graph.h"
 #define RED "\033[31m"
 #define GREEN "\033[32m"
+#define PURPLE "\033[35m"
 #define RESET "\033[0m"
 
 
@@ -323,7 +325,7 @@ void MiniInstagram::signup(string& username, const string& password, const strin
     userBST.insert(username, newUser);  // Store the User object in the BST
     userCredentials.insert(username, password);
     userRelations.addVertex(username);
-    cout << GREEN << "[ Signup successful for " << username << " ]" << RESET << endl;
+    cout << PURPLE<< "[ Signup successful for " << username << " ]" << RESET << endl;
 }
 
 User* MiniInstagram::login(string& username, string password) {
@@ -341,7 +343,7 @@ User* MiniInstagram::login(string& username, string password) {
     {
         User* user = userBST.search(username);
         user->login();  // Set the last login time
-        cout << GREEN <<  "Login successful for " << username << RESET << endl;
+        cout << PURPLE<<  "Login successful for " << username << RESET << endl;
         return user;  // Exit immediately if login is successful
     }
 
@@ -391,7 +393,7 @@ User* MiniInstagram::login(string& username, string password) {
 
             if (user && user->validatePassword(password)) {
                 user->login();  // Set the last login time
-                cout << GREEN << "Login successful for " << username << RESET << endl;;
+                cout << PURPLE<< "Login successful for " << username << RESET << endl;;
                 return user;  // Exit the function after successful login
             }
             else {
@@ -597,7 +599,7 @@ void User::getStatus() {
                 
                 G->modifyRelation(this->username, request, FRIEND);
                 G->modifyRelation(request, this->username, FRIEND);
-                cout << GREEN << "You are now friends with " << request << "." << RESET << endl;
+                cout << PURPLE<< "You are now friends with " << request << "." << RESET << endl;
             }
             else {
                 cout << request << " Started following you " << "." << endl;
@@ -760,11 +762,18 @@ void User::viewMessages(const string& friendUsername) {
 
 int main()
 {
+    Helper h;
+    h.zoomConsoleScreen(200);
+    h.FullScreen();
+    //h.load();
+    
     MiniInstagram platform;
     User* currentUser = nullptr;
 
     while (true) {
         int choice;
+        system("Color 3F");
+        h.printMiniInstagram();
         cout << "Menu:" << endl;
         cout << "1. Signup" << endl;
         cout << "2. Login" << endl;
@@ -792,18 +801,18 @@ int main()
         switch (choice) {
         case 1: {
             signup(platform);
-          /*  string username, password, city, security;
-            cout << "Enter username: ";
-            cin >> username;
-            cout << "Enter password: ";
-            cin >> password;
-            cout << "Enter city: ";
-            cin >> city;
-            cout << "Enter your pet name as security answer:";
-            cin >> security;
-            User* newUser = nullptr;
-            platform.signup(username, password, city, security, newUser);
-            break;*/
+            //string username, password, city, security;
+            //cout << "Enter username: ";
+            //cin >> username;
+            //cout << "Enter password: ";
+            //cin >> password;
+            //cout << "Enter city: ";
+            //cin >> city;
+            //cout << "Enter your pet name as security answer:";
+            //cin >> security;
+            //User* newUser = nullptr;
+            //platform.signup(username, password, city, security, newUser);
+            break;
         }
         case 2:
         {
@@ -916,6 +925,11 @@ int main()
                 cout << "No user currently logged in." << endl;
             }
             break;
+        case 13: 
+        {
+            system("pause");
+            exit(0);
+        }
         case 14:
             if (currentUser) {
                 std::cout << "Relations:" << endl;
@@ -1032,6 +1046,7 @@ int main()
                 break;
             }
         }
+        system("pause");
         system("cls");
     }
 
