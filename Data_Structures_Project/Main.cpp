@@ -16,8 +16,18 @@
 using namespace std;
 
 
-void showError(string s) {
+enum FLOW_STATE{
+    MAIN_MENU,
+    LOGGED_IN
+};
+
+FLOW_STATE current_flow = MAIN_MENU;
+
+static void showError(string s) {
     cout << RED << s << RESET << endl;
+}
+static void showSuccess(string s) {
+    cout << PURPLE << s << RESET << endl;
 }
 
 // Utility to get current timestamp
@@ -344,6 +354,7 @@ User* MiniInstagram::login(string& username, string password) {
         User* user = userBST.search(username);
         user->login();  // Set the last login time
         cout << PURPLE<<  "Login successful for " << username << RESET << endl;
+        current_flow = LOGGED_IN;
         return user;  // Exit immediately if login is successful
     }
 
@@ -378,7 +389,8 @@ User* MiniInstagram::login(string& username, string password) {
 
                     if (user && user->validatePassword(password)) {
                         user->login();  // Set the last login time
-                        cout << "Login successful for " << username << "" << endl;
+                        cout << PURPLE << "Login successful for " << username << RESET << endl;
+                        current_flow = LOGGED_IN;
                         return user;  // Exit the function after successful login
                     }
             }
@@ -393,7 +405,8 @@ User* MiniInstagram::login(string& username, string password) {
 
             if (user && user->validatePassword(password)) {
                 user->login();  // Set the last login time
-                cout << PURPLE<< "Login successful for " << username << RESET << endl;;
+                cout << PURPLE<< "Login successful for " << username << RESET << endl;
+                current_flow = LOGGED_IN;
                 return user;  // Exit the function after successful login
             }
             else {
@@ -564,7 +577,7 @@ void User::getStatus() {
         cout<< "Offline"; // User has been logged out, but it's less than 10 seconds
     }
 }
-    void User::viewFriendRequests(Graph* G) {
+void User::viewFriendRequests(Graph* G) {
     if (friendRequests.isEmpty()) {
         cout << "[ No pending friend requests. ]" << endl;
         return;
@@ -774,6 +787,301 @@ int main()
         int choice;
         system("Color 3F");
         h.printMiniInstagram();
+        switch (current_flow)
+        {
+        case MAIN_MENU: {
+            h.DisplayInBox("MAIN MENU");
+            cout << "1. Signup" << endl;
+            cout << "2. Login" << endl;
+            cout << "3. Show All Users" << endl;
+            cout << "4. Exit" << endl;
+            cin >> choice;
+            switch (choice) {
+            case 1: {
+                //signup(platform);
+                string username, password, city, security;
+                cout << "Enter username: ";
+                cin >> username;
+                cout << "Enter password: ";
+                cin >> password;
+                cout << "Enter city: ";
+                cin >> city;
+                cout << "Enter your pet name as security answer:";
+                cin >> security;
+                User* newUser = nullptr;
+                platform.signup(username, password, city, security, newUser);
+                break;
+            }
+            case 2:
+            {
+                string username, password;
+                cout << "Enter username: ";
+                cin >> username;
+                cout << "Enter password: ";
+                cin >> password;
+                currentUser = platform.login(username, password);
+                break;
+            }
+            case 3:
+                platform.showUsers();
+                break;
+
+            case 4:
+                cout << "Press any key to exit...";
+                _getch();
+                exit(0);
+                break;
+            }
+            break;
+        }
+        case LOGGED_IN: {
+            h.DisplayInBox("Current User : " + currentUser->getUsername());
+            cout << "1.  Show Profile" << endl;
+            cout << "2.  Create Post" << endl;
+            cout << "3.  View Posts" << endl;
+            cout << "4.  View Notifications" << endl;
+            cout << "5.  Send Friend Request" << endl;
+            cout << "6.  View Friend Requests" << endl;
+            cout << "7.  Send Message" << endl;
+            cout << "8.  View Messages" << endl;
+            cout << "9.  Show Relations" << endl;
+            cout << "10. Modify Relation" << endl;
+            cout << "11. Show Status" << endl;
+            cout << "12. view timeline" << endl;
+            cout << "13. Show Followers" << endl;
+            cout << "14. Get Friend Suggestions" << endl;
+            cout << "15. Find Mutuals" << endl;
+            cout << "16. Logout" << endl;
+            
+            cin >> choice;
+            switch (choice)
+            {
+
+            case 1:
+                if (currentUser) {
+                    currentUser->showProfile();
+                }
+                else {
+                    cout << "No user currently logged in." << endl;
+                }
+
+            break; 
+            case 2:
+                if (currentUser) {
+                    string postContent;
+                    cout << "Enter post content: ";
+                    cin >> ws;
+                    getline(cin, postContent);
+                    currentUser->createPost(postContent, platform.getRelations());
+                }
+                else {
+                    cout << "[No user currently logged in.]" << endl;
+                }
+            break;
+            case 3:
+                if (currentUser) {
+                    currentUser->viewPosts();
+                }
+                else {
+                    cout << "No user currently logged in." << endl;
+                }
+                break;
+            case 4:
+                if (currentUser) {
+                    currentUser->viewNotifications();
+                }
+                else {
+                    cout << "No user currently logged in." << endl;
+                }
+                break;
+            case 5:
+                if (currentUser) {
+                    string friendUsername;
+                    cout << "Enter friend's username: ";
+                    cin >> friendUsername;
+                    User* friendUser = platform.userBST.search(friendUsername);
+                    if (friendUser) {
+                        currentUser->sendFriendRequest(friendUser);
+                        platform.userRelations.addEdge(currentUser->getUsername(), friendUsername, PENDING);
+                    }
+                    else {
+                        cout << "[User not found.]" << endl;
+                    }
+                }
+                else {
+                    cout << "[No user currently logged in.]" << endl;
+                }
+                break;
+            case 6:
+                if (currentUser) {
+                    currentUser->viewFriendRequests(platform.getRelations());
+                }
+                else {
+                    cout << "[No user currently logged in.]" << endl;
+                }
+                break;
+
+            case 7:
+                if (currentUser) {
+                    string friendUsername, message;
+                    cout << "Enter friend's username: ";
+                    cin >> friendUsername;
+                    cout << "Enter your message: ";
+                    cin >> ws;
+                    getline(cin, message);
+                    currentUser->sendMessage(friendUsername, message);
+                }
+                else {
+                    cout << "[ No user currently logged in ]" << endl;
+                }
+                break;
+            case 8:
+                if (currentUser) {
+                    string friendUsername;
+                    cout << "Enter friend's username: ";
+                    cin >> friendUsername;
+                    currentUser->viewMessages(friendUsername);
+                }
+                else {
+                    cout << "[ No user currently logged in. ]" << endl;
+                }
+                break;
+            case 9:
+                if (currentUser) {
+                    std::cout << "Relations:" << endl;
+                    platform.getRelations()->showRelations(currentUser->getUsername());
+                }
+                else {
+                    std::cout << "No user currently logged in." << endl;
+                }
+                break;
+            case 10:
+                if (currentUser) {
+                    std::string friendUsername;
+                    int newRelationStatus;
+                    std::cout << "Enter username to modify relation: ";
+                    std::cin >> friendUsername;
+
+                    std::cout << "Choose new relation status:" << endl;
+                    std::cout << "1. Friend" << endl;
+                    std::cout << "2. Family" << endl;
+                    std::cout << "3. Blocked" << endl;
+                    std::cout << "Choice: ";
+                    std::cin >> newRelationStatus;
+
+                    if (newRelationStatus >= 1 && newRelationStatus <= 3) {
+                        RelationStatus newStatus = static_cast<RelationStatus>(newRelationStatus - 1);
+                        platform.getRelations()->modifyRelation(currentUser->getUsername(), friendUsername, newStatus);
+                    }
+                    else {
+                        std::cout << "Invalid choice." << endl;
+                    }
+                }
+                else {
+                    std::cout << "No user currently logged in." << endl;
+                }
+                break;
+            case 11:
+            {
+                platform.showUsers();
+                string user;
+                cout << "Enter username to check status: ";
+                cin >> user;
+                User* targetUser = platform.userBST.search(user);
+                if (targetUser) {
+                    if (currentUser) {
+                        cout << "User " << currentUser->getUsername() << " is currently: ";
+                        currentUser->getStatus();
+                    }
+                    else {
+                        cout << "No user currently logged in." << endl;
+                        time_t now = targetUser->getCurrentTime1();  // Get current time
+                        double diff = difftime(now, targetUser->lastLogin1);  // Get the difference between now and last login time
+                        // Check if the time difference is more than or equal to 60 seconds
+                        if (diff >= 60) {
+                            int minutes = static_cast<int>(diff) / 60;  // Convert seconds to minutes
+                            int seconds = static_cast<int>(diff) % 60;  // Get remaining seconds
+                            cout << "Offline (Logged out for " << minutes << " minute(s) and " << seconds << " second(s))" << endl;
+                        }
+                        else {
+                            cout << "Offline (Logged out for " + to_string(static_cast<int>(diff)) + " seconds)" << endl;
+                        }
+                    }
+                }
+                else {
+                    cout << "User not found." << endl;
+                }
+                break;
+            }
+            case 12:
+                if (currentUser) {
+                    currentUser->viewTimeline();
+                }
+                else {
+                    cout << "No user currently logged in." << endl;
+                }
+                break;
+            case 13:
+            {
+                string user;
+                cout << "All users " << endl;
+                platform.userBST.displayAll();
+                cout << "Enter username to check followers list : ";
+                cin >> ws;
+                getline(cin, user);
+                cout << "Followers : " << endl;
+                vector<string> flowers = platform.userRelations.getFollowersList(user);
+                for (const std::string& follower : flowers) {
+                    cout << follower << endl;
+                }
+                break;
+            }
+            case 14:
+            {
+                string user;
+                cout << "All users " << endl;
+                platform.userBST.displayAll();
+                cout << "Enter username to get friend suggestions : ";
+                cin >> ws;
+                getline(cin, user);
+                platform.userRelations.friendSuggestions(user);
+                break;
+            }
+            case 15: {
+                string user1;
+                cout << "All users " << endl;
+                platform.userBST.displayAll();
+                cout << "Enter other friend username: ";
+                cin >> ws;
+                getline(cin, user1);
+                /*cout << "Enter second username: ";
+                cin >> ws;
+                getline(cin, user2);*/
+                cout << "Followers : " << endl;
+                platform.userRelations.mutualFriends(currentUser->getUsername(), user1);
+                break;
+            }
+            case 16:
+                if (currentUser) {
+                    currentUser->logout();
+                    currentUser = nullptr;
+                    cout << "Logout successful." << endl;
+                    current_flow = MAIN_MENU;
+                }
+                else {
+                    cout << "No user currently logged in." << endl;
+                }
+                break;
+            default:
+                break;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
+        /*
         cout << "Menu:" << endl;
         cout << "1. Signup" << endl;
         cout << "2. Login" << endl;
@@ -1046,7 +1354,11 @@ int main()
                 break;
             }
         }
-        system("pause");
+
+        */
+
+        cout << "Press any key to continue...";
+        _getch();
         system("cls");
     }
 
